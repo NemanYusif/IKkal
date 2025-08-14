@@ -3,6 +3,7 @@ import { useRouter } from "expo-router";
 import React, { useState } from "react";
 
 import AntDesign from "@expo/vector-icons/AntDesign";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import {
   Alert,
   Image,
@@ -12,7 +13,7 @@ import {
   Text,
   TextInput,
   TouchableOpacity,
-  View
+  View,
 } from "react-native";
 import PrimeryBtn from "../Components/ui/primeryBtn";
 
@@ -27,13 +28,24 @@ const StepSecond: React.FC = () => {
     active: string;
   }
   const router = useRouter();
-  const isDisabled =!heigth.trim() || !weight.trim() || !active.trim();
+  const isDisabled = !heigth.trim() || !weight.trim() || !active.trim();
 
   const saveData = async (): Promise<void> => {
-     if(isDisabled){
-      Alert.alert('Error', 'Please fill all fields');
+    if (isDisabled) {
+      Alert.alert("Error", "Please fill all fields");
       return;
-  }
+    }
+    try {
+      const userData: UserProfile = {
+        heigth: heigth.trim() ? parseInt(heigth.trim(), 10) : 0,
+        weight: weight.trim() ? parseInt(weight.trim(), 10) : 0,
+        active: active.trim(),
+      };
+      await AsyncStorage.setItem("userData", JSON.stringify(userData));
+      router.push("/homeScreen");
+    } catch (error) {
+      Alert.alert("Erro", "Failed to save data");
+    }
   };
 
   return (
@@ -129,7 +141,11 @@ const StepSecond: React.FC = () => {
             </View>
 
             <View className="mt-10">
-              <PrimeryBtn onPress={saveData} label="Continue to App" disable={isDisabled} />
+              <PrimeryBtn
+                onPress={saveData}
+                label="Continue to App"
+                disable={isDisabled}
+              />
             </View>
           </View>
         </View>
